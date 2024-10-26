@@ -3,33 +3,95 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ddudka <ddudka@student.42.fr>              +#+  +:+       +#+        */
+/*   By: denysdudka <denysdudka@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 11:11:32 by ddudka            #+#    #+#             */
-/*   Updated: 2024/10/21 14:25:09 by ddudka           ###   ########.fr       */
+/*   Updated: 2024/10/26 13:02:12 by denysdudka       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-// char	*get_next_line(int fd)
-// {
-// 	static t_list *list = NULL;//pointer to a first node of my list
-// 	char *next_line;
 
-// 	if(fd < 0 || BUFFER_SIZE <= 0 || read(fd,&next_line,0) < 0)
-// }
-int main()
+char *read_line(char *buffer,char *left_c, int fd)
+{
+	ssize_t chars_read;
+	char *tmp;
+	
+	chars_read = 1;
+	while(chars_read)
 	{
-		int fd;
-		char* dummy = NULL;
-		fd = open("text.txt",O_RDONLY);
-		int readres = read(fd,&dummy,1);
-		if(fd < 0 || readres < 0)
-			return 0;
-			
-		printf("%s",dummy);
+	chars_read = read(fd,buffer,BUFFER_SIZE);
+	if (chars_read < 0)
+	{
+			free(left_c);
+			return (NULL);
+		}
+	else if (!chars_read)
+	break;
+	buffer[chars_read] = '\0';
+	if (!left_c)
+			left_c = ft_strdup("");
+		tmp = left_c;
+		left_c = ft_strjoin(tmp, buffer);
+		free(tmp);
+		tmp = NULL;
+		if (ft_strrchr(buffer, '\n'))
+			break ;
 	}
+	return (left_c);
+} 
 
+char *remainded_string(char *line)
+{
+	char *left_c;
+	ssize_t i;
+
+	i = 0;
+	while (line[i] != '\n' && line[i] != '\0')
+		i++;
+	if (line[i] == 0)
+		return (NULL);
+	left_c = ft_substr(line, i + 1, ft_strlen(line) - i);
+	if (*left_c == 0)
+	{
+		free(left_c);
+		left_c = NULL;
+	}
+	line[i + 1] = 0;
+	return (left_c);
+}
+char *get_next_line(int fd)
+{
+	char *line;
+	char *buf;
+	static char *left_c;
+	
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	{
+		free(left_c);
+		return (NULL);
+	}
+	buf = calloc(BUFFER_SIZE + 1,sizeof(char));
+	if (!buf)
+		return (NULL);
+	line = read_line(buf,left_c,fd);
+	free(buf);
+	if (!line)
+		return (NULL);
+	left_c = remainded_string(line);
+	return (line);
+}
+// int main()
+// 	{
+// 		int fd;
+// 		char* dummy;
+// 		fd = open("text.txt",O_RDONLY);
+// 		int readres = read(fd,dummy,0);
+// 		if(fd < 0 || readres < 0)
+// 			return 0;
+			
+// 		printf("%s",dummy);
+// 	}
 // int main()
 // {
 // 	// OPEN 
